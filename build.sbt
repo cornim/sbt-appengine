@@ -27,14 +27,10 @@ libraryDependencies <++= (scalaBinaryVersion in sbtPlugin, sbtBinaryVersion in s
 
 scalacOptions := Seq("-deprecation", "-unchecked")
 
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 publishArtifact in (Compile, packageBin) := true
-
 publishArtifact in (Test, packageBin) := false
-
 publishArtifact in (Compile, packageDoc) := false
-
 publishArtifact in (Compile, packageSrc) := false
 
 resolvers += "Maven.org" at "http://repo1.maven.org/maven2"
@@ -48,4 +44,5 @@ publishTo := {
   else Some(Resolver.sbtPluginRepo("releases"))
 }
 
-credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
+//credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+//credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
