@@ -184,22 +184,24 @@ object Plugin extends sbt.Plugin {
         packageWar.value,
         (gae.onStartHooks in gae.devServer).value, (gae.onStopHooks in gae.devServer).value)
     },
-    gae.reForkOptions in gae.devServer <<= (gae.temporaryWarPath, scalaInstance,
-      javaOptions in gae.devServer, outputStrategy, javaHome) map { (wp, si, jvmOptions, strategy, javaHomeDir) =>
-        ForkOptions(
-          javaHome = javaHomeDir,
-          outputStrategy = strategy,
-          bootJars = si.jars,
-          workingDirectory = Some(wp),
-          runJVMOptions = jvmOptions,
-          connectInput = false,
-          envVars = Map.empty)
-      },
+    gae.reForkOptions in gae.devServer :=
+      ((gae.temporaryWarPath, scalaInstance, javaOptions in gae.devServer, outputStrategy, javaHome)
+        map { (wp, si, jvmOptions, strategy, javaHomeDir) =>
+          ForkOptions(
+            javaHome = javaHomeDir,
+            outputStrategy = strategy,
+            bootJars = si.jars,
+            workingDirectory = Some(wp),
+            runJVMOptions = jvmOptions,
+            connectInput = false,
+            envVars = Map.empty)
+        }).value,
     gae.reLogTag in gae.devServer := "gae.devServer",
     mainClass in gae.devServer := Some("com.google.appengine.tools.development.DevAppServerMain"),
-    fullClasspath in gae.devServer <<= (gae.apiToolsPath) map { (jar: File) => Seq(jar).classpath },
+    fullClasspath in gae.devServer :=
+      ((gae.apiToolsPath) map { (jar: File) => Seq(jar).classpath }).value,
     gae.localDbPath in gae.devServer := target.value / "local_db.bin",
-    gae.reStartArgs in gae.devServer <<= gae.temporaryWarPath { (wp) => Seq(wp.absolutePath) },
+    gae.reStartArgs in gae.devServer := (gae.temporaryWarPath { (wp) => Seq(wp.absolutePath) }).value,
     // http://thoughts.inphina.com/2010/06/24/remote-debugging-google-app-engine-application-on-eclipse/
     gae.debug in gae.devServer := true,
     gae.debugPort in gae.devServer := 1044,
@@ -212,39 +214,39 @@ object Plugin extends sbt.Plugin {
         (if (d) Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=" + dp.toString) else Nil) ++
         createJRebelAgentOption(revolver.SysoutLogger, jr).toSeq
     },
-    gae.stopDevServer <<= gae.reStop map { identity },
+    gae.stopDevServer := (gae.reStop map { identity }).value,
 
     gae.apiToolsJar := "appengine-tools-api.jar",
-    gae.sdkVersion <<= (gae.libUserPath) { (dir) => AppEngine.buildSdkVersion(dir) },
+    gae.sdkVersion := ((gae.libUserPath) { (dir) => AppEngine.buildSdkVersion(dir) }).value,
     gae.sdkPath := AppEngine.buildAppengineSdkPath,
 
     gae.includeLibUser := true,
     // this controls appengine classpath, which is used in unmanagedClasspath
-    gae.classpath <<= (gae.includeLibUser, gae.libUserPath) { (b, dir) =>
+    gae.classpath := ((gae.includeLibUser, gae.libUserPath) { (b, dir) =>
       if (b) (dir ** "*.jar").classpath
       else Nil
-    },
+    }).value,
 
-    gae.apiJarName <<= (gae.sdkVersion) { (v) => "appengine-api-1.0-sdk-" + v + ".jar" },
-    gae.apiLabsJarName <<= (gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" },
-    gae.jsr107CacheJarName <<= (gae.sdkVersion) { (v) => "appengine-jsr107cache-" + v + ".jar" },
+    gae.apiJarName := ((gae.sdkVersion) { (v) => "appengine-api-1.0-sdk-" + v + ".jar" }).value,
+    gae.apiLabsJarName := ((gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" }).value,
+    gae.jsr107CacheJarName := ((gae.sdkVersion) { (v) => "appengine-jsr107cache-" + v + ".jar" }).value,
 
-    gae.binPath <<= gae.sdkPath(_ / "bin"),
-    gae.libPath <<= gae.sdkPath(_ / "lib"),
-    gae.libUserPath <<= gae.libPath(_ / "user"),
-    gae.libImplPath <<= gae.libPath(_ / "impl"),
-    gae.apiJarPath <<= (gae.libUserPath, gae.apiJarName) { (dir, name) => dir / name },
-    gae.apiToolsPath <<= (gae.libPath, gae.apiToolsJar) { _ / _ },
+    gae.binPath := (gae.sdkPath(_ / "bin")).value,
+    gae.libPath := (gae.sdkPath(_ / "lib")).value,
+    gae.libUserPath := (gae.libPath(_ / "user")).value,
+    gae.libImplPath := (gae.libPath(_ / "impl")).value,
+    gae.apiJarPath := ((gae.libUserPath, gae.apiJarName) { (dir, name) => dir / name }).value,
+    gae.apiToolsPath := ((gae.libPath, gae.apiToolsJar) { _ / _ }).value,
     gae.appcfgName := "appcfg" + AppEngine.osBatchSuffix,
-    gae.appcfgPath <<= (gae.binPath, gae.appcfgName) { (dir, name) => dir / name },
-    gae.overridePath <<= gae.libPath(_ / "override"),
-    gae.overridesJarPath <<= (gae.overridePath) { (dir) => dir / "appengine-dev-jdk-overrides.jar" },
-    gae.agentJarPath <<= (gae.libPath) { (dir) => dir / "agent" / "appengine-agent.jar" },
+    gae.appcfgPath := ((gae.binPath, gae.appcfgName) { (dir, name) => dir / name }).value,
+    gae.overridePath := (gae.libPath(_ / "override")).value,
+    gae.overridesJarPath := ((gae.overridePath) { (dir) => dir / "appengine-dev-jdk-overrides.jar" }).value,
+    gae.agentJarPath := ((gae.libPath) { (dir) => dir / "agent" / "appengine-agent.jar" }).value,
     gae.emptyFile := file(""),
     gae.temporaryWarPath := target.value / "webapp")
 
   lazy val baseAppengineDataNucleusSettings: Seq[Def.Setting[_]] = Seq(
-    packageWar <<= (packageWar) dependsOn gae.enhance,
+    packageWar := ((packageWar) dependsOn gae.enhance).value,
     gae.classpath := {
       val appengineORMJars = (gae.libPath.value / "orm" * "*.jar").get
       gae.classpath.value ++ appengineORMJars.classpath
@@ -286,12 +288,12 @@ object Plugin extends sbt.Plugin {
     inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
     inConfig(Test)(Seq(
       unmanagedClasspath ++= ((gae.classpath) map { (cp) => cp }).value,
-      gae.classpath <<= (gae.classpath in Compile,
+      gae.classpath := ((gae.classpath in Compile,
         gae.libImplPath in Compile, gae.libPath in Compile) { (cp, impl, lib) =>
           val impljars = (impl * "*.jar").get
           val testingjars = (lib / "testing" * "*.jar").get
           cp ++ Attributed.blankSeq(impljars ++ testingjars)
-        })) ++
+        }).value)) ++
     Seq(
       watchSources ++= ((webappResources in Compile) map { (wr) => (wr ** "*").get }).value)
 
