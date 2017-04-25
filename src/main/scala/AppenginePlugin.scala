@@ -152,11 +152,11 @@ object Plugin extends sbt.Plugin {
 
   lazy val baseAppengineSettings: Seq[Def.Setting[_]] = Seq(
     // this is classpath during compile
-    unmanagedClasspath ++= ((gae.classpath) map { (cp) => cp }).value,
+    unmanagedClasspath ++= gae.classpath.value,
     // this is classpath included into WEB-INF/lib
     // https://developers.google.com/appengine/docs/java/tools/ant
     // "All of these JARs are in the SDK's lib/user/ directory."
-    unmanagedClasspath in DefaultClasspathConf ++= ((unmanagedClasspath) map { (cp) => cp }).value,
+    unmanagedClasspath in DefaultClasspathConf ++= unmanagedClasspath.value,
 
     gae.requestLogs := AppEngine.appcfgTask("request_logs", outputFile = Some("request.log")).evaluated,
     gae.rollback := AppEngine.appcfgTask("rollback").evaluated,
@@ -185,17 +185,8 @@ object Plugin extends sbt.Plugin {
         (gae.onStartHooks in gae.devServer).value, (gae.onStopHooks in gae.devServer).value)
     },
     gae.reForkOptions in gae.devServer :=
-      ((gae.temporaryWarPath, scalaInstance, javaOptions in gae.devServer, outputStrategy, javaHome)
-        map { (wp, si, jvmOptions, strategy, javaHomeDir) =>
-          ForkOptions(
-            javaHome = javaHomeDir,
-            outputStrategy = strategy,
-            bootJars = si.jars,
-            workingDirectory = Some(wp),
-            runJVMOptions = jvmOptions,
-            connectInput = false,
-            envVars = Map.empty)
-        }).value,
+      ForkOptions(javaHome.value, outputStrategy.value, scalaInstance.value.jars,
+        Some(gae.temporaryWarPath.value), (javaOptions in gae.devServer).value, false, Map()),
     gae.reLogTag in gae.devServer := "gae.devServer",
     mainClass in gae.devServer := Some("com.google.appengine.tools.development.DevAppServerMain"),
     fullClasspath in gae.devServer :=
@@ -222,10 +213,10 @@ object Plugin extends sbt.Plugin {
 
     gae.includeLibUser := true,
     // this controls appengine classpath, which is used in unmanagedClasspath
-    gae.classpath := ((gae.includeLibUser, gae.libUserPath) { (b, dir) =>
-      if (b) (dir ** "*.jar").classpath
+    gae.classpath := {
+      if (gae.includeLibUser.value) (gae.libUserPath.value ** "*.jar").classpath
       else Nil
-    }).value,
+    },
 
     gae.apiJarName := ((gae.sdkVersion) { (v) => "appengine-api-1.0-sdk-" + v + ".jar" }).value,
     gae.apiLabsJarName := ((gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" }).value,
@@ -235,13 +226,13 @@ object Plugin extends sbt.Plugin {
     gae.libPath := (gae.sdkPath(_ / "lib")).value,
     gae.libUserPath := (gae.libPath(_ / "user")).value,
     gae.libImplPath := (gae.libPath(_ / "impl")).value,
-    gae.apiJarPath := ((gae.libUserPath, gae.apiJarName) { (dir, name) => dir / name }).value,
-    gae.apiToolsPath := ((gae.libPath, gae.apiToolsJar) { _ / _ }).value,
+    gae.apiJarPath := { gae.libUserPath.value / gae.apiJarName.value },
+    gae.apiToolsPath := { gae.libPath.value / gae.apiToolsJar.value },
     gae.appcfgName := "appcfg" + AppEngine.osBatchSuffix,
-    gae.appcfgPath := ((gae.binPath, gae.appcfgName) { (dir, name) => dir / name }).value,
+    gae.appcfgPath := { gae.binPath.value / gae.appcfgName.value },
     gae.overridePath := (gae.libPath(_ / "override")).value,
-    gae.overridesJarPath := ((gae.overridePath) { (dir) => dir / "appengine-dev-jdk-overrides.jar" }).value,
-    gae.agentJarPath := ((gae.libPath) { (dir) => dir / "agent" / "appengine-agent.jar" }).value,
+    gae.overridesJarPath := { gae.overridePath.value / "appengine-dev-jdk-overrides.jar" },
+    gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" },
     gae.emptyFile := file(""),
     gae.temporaryWarPath := target.value / "webapp")
 
@@ -284,18 +275,18 @@ object Plugin extends sbt.Plugin {
     gae.persistenceApi in gae.enhance := "JDO")
 
   lazy val webSettings = appengineSettings
-  lazy val appengineSettings: Seq[Def.Setting[_]] = WebPlugin.webSettings ++
-    inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
-    inConfig(Test)(Seq(
-      unmanagedClasspath ++= ((gae.classpath) map { (cp) => cp }).value,
-      gae.classpath := ((gae.classpath in Compile,
-        gae.libImplPath in Compile, gae.libPath in Compile) { (cp, impl, lib) =>
-          val impljars = (impl * "*.jar").get
-          val testingjars = (lib / "testing" * "*.jar").get
-          cp ++ Attributed.blankSeq(impljars ++ testingjars)
-        }).value)) ++
-    Seq(
-      watchSources ++= ((webappResources in Compile) map { (wr) => (wr ** "*").get }).value)
+  lazy val appengineSettings: Seq[Def.Setting[_]] =
+    WebPlugin.webSettings ++
+      inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
+      inConfig(Test)(Seq(
+        unmanagedClasspath ++= gae.classpath.value,
+        gae.classpath := {
+          val impljars = ((gae.libImplPath in Compile).value * "*.jar").get
+          val testingjars = ((gae.libPath in Compile).value / "testing" * "*.jar").get
+          (gae.classpath in Compile).value ++ Attributed.blankSeq(impljars ++ testingjars)
+        })) ++
+      Seq(
+        watchSources ++= ((webappResources in Compile).value ** "*").get)
 
   lazy val appengineDataNucleusSettings: Seq[Def.Setting[_]] = inConfig(Compile)(baseAppengineDataNucleusSettings)
 }
