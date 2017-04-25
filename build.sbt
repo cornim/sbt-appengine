@@ -2,16 +2,18 @@ sbtPlugin := true
 
 name := "sbt-appengine"
 
-organization := "com.eed3si9n"
+organization := "com.cornim"
 
-version := "0.6.2"
+version := "0.6.3"
 
 description := "sbt plugin to deploy on appengine"
 
 licenses := Seq("MIT License" -> url("https://github.com/sbt/sbt-appengine/blob/master/LICENSE"))
 
-libraryDependencies <++= (scalaBinaryVersion in sbtPlugin, sbtBinaryVersion in sbtPlugin) { (scalaV, sv) => Seq(
-  sv match {
+libraryDependencies ++={
+  val scalaV = (scalaBinaryVersion in sbtPlugin).value
+  val sv = (sbtBinaryVersion in sbtPlugin).value
+  Seq(sv match {
     case "0.11.0" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.0-0.2.8"
     case "0.11.1" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.1-0.2.10"
     case "0.11.2" => "com.github.siasia" %% "xsbt-web-plugin" % "0.11.2-0.2.11"
@@ -44,5 +46,3 @@ publishTo := {
   else Some(Resolver.sbtPluginRepo("releases"))
 }
 
-//credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-//credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
