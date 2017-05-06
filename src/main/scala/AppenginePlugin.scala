@@ -1,8 +1,6 @@
 package sbtappengine
 
 import sbt._
-import org.apache.ivy.core.resolve.ResolveOptions
-import org.apache.ivy.Ivy
 
 object Plugin extends sbt.Plugin {
   import Keys._
