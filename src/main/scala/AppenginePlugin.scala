@@ -234,7 +234,7 @@ object AppenginePlugin extends AutoPlugin {
     gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" },
     gae.emptyFile := file(""))
 
-  lazy val webSettings = appengineSettings
+  override lazy val projectSettings = appengineSettings
   lazy val appengineSettings: Seq[Def.Setting[_]] =
     WarPlugin.projectSettings ++
       inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
