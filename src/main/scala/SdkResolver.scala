@@ -1,6 +1,9 @@
 package sbtappengine
 
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FilenameFilter
 import java.io.IOException
 import java.util.zip.ZipFile
@@ -21,10 +24,6 @@ import sbt.Keys.baseDirectory
 import sbt.Keys.ivySbt
 import sbt.Keys.libraryDependencies
 import sbt.Keys.streams
-import java.util.zip.ZipInputStream
-import java.io.BufferedOutputStream
-import java.io.FileOutputStream
-import java.io.FileInputStream
 
 object SdkResolver {
 
@@ -120,7 +119,6 @@ object SdkResolver {
     var sdkBaseDirSuffix: String = null
 
     try {
-      val zin = new ZipInputStream(new FileInputStream(sdkArchive))
       val sdkZipArchive = new ZipFile(sdkArchive);
       var zipEntries = sdkZipArchive.entries();
 
@@ -149,7 +147,8 @@ object SdkResolver {
 
           if (!zipEntryDestination.exists()) {
             createParentDirs(zipEntryDestination)
-            extractFile(zin, zipEntryDestination)
+            extractFile(new BufferedInputStream(sdkZipArchive.getInputStream(zipEntry)),
+              zipEntryDestination)
           }
         }
       }
@@ -157,7 +156,7 @@ object SdkResolver {
     } catch {
       case e: IOException => sys.error("Could not open SDK zip archive.\n" + e);
     } finally {
-      sdkArchive.delete()
+      //sdkArchive.delete()
     }
 
     if (sdkBaseDirSuffix == null) sdkBaseDir
@@ -181,14 +180,25 @@ object SdkResolver {
     if (!parent.isDirectory()) sys.error("Unable to create parent directories of " + file)
   }
 
-  def extractFile(zipIn: ZipInputStream, outFile: File): Unit = {
-    val bos = new BufferedOutputStream(new FileOutputStream(outFile))
-    val bytesIn = new Array[Byte](4096)
-    var read = 0
-    while (read != -1) {
-      bos.write(bytesIn, 0, read);
-      read = zipIn.read(bytesIn)
+  def extractFile(is: BufferedInputStream, destFile: File): Unit = {
+    val BUFFER = 4096
+    var currentByte = 0
+    // establish buffer for writing file
+    val data = new Array[Byte](BUFFER)
+
+    // write the current file to disk
+    val fos = new FileOutputStream(destFile);
+    val dest = new BufferedOutputStream(fos,
+      BUFFER);
+
+    // read and write until last byte is encountered
+    currentByte = is.read(data, 0, BUFFER)
+    while (currentByte != -1) {
+      dest.write(data, 0, currentByte)
+      currentByte = is.read(data, 0, BUFFER)
     }
-    bos.close();
+    dest.flush();
+    dest.close();
+    is.close();
   }
 }

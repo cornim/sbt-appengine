@@ -124,8 +124,8 @@ object Plugin extends sbt.Plugin {
       val logger = new revolver.SysoutLogger(logTag, color, streams.log.ansiCodesSupported)
       colorLogger(streams.log).info("[YELLOW]Starting dev server in the background ...")
       onStart foreach { _.apply() }
-      streams.log.info(cp.toString() + "\n" + options + "\n" + startConfig.jvmArgs
-        + "\n" + mainClass.get + "\n" + startConfig.startArgs + "\n" + args)
+      //streams.log.info(cp.toString() + "\n" + options + "\n" + startConfig.jvmArgs
+      //  + "\n" + mainClass.get + "\n" + startConfig.startArgs + "\n" + args)
       val appProcess = revolver.AppProcess(project, color, logger) {
         Fork.java.fork(options.javaHome,
           Seq("-cp", cp.map(_.data.absolutePath).mkString(System.getProperty("file.separator"))) ++
