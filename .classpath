@@ -1,101 +1,89 @@
 <classpath>
   <classpathentry kind="src" path="src/main/scala"/>
   <classpathentry kind="src" path="target/scala-2.10/sbt-0.13/resource_managed/main"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/srcs/xsbt-web-plugin-0.4.0-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/jars/xsbt-web-plugin-0.4.0.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/docs/xsbt-web-plugin-0.4.0-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty/srcs/jetty-6.1.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty/jars/jetty-6.1.22.jar"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty-util/srcs/jetty-util-6.1.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty-util/jars/jetty-util-6.1.22.jar"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.mortbay.jetty/servlet-api/srcs/servlet-api-2.5-20081211-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.mortbay.jetty/servlet-api/jars/servlet-api-2.5-20081211.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.mortbay.jetty/servlet-api/docs/servlet-api-2.5-20081211-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty-plus/srcs/jetty-plus-6.1.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.mortbay.jetty/jetty-plus/jars/jetty-plus-6.1.22.jar"/>
-  <classpathentry kind="lib" path="/home/corni/.ivy2/cache/geronimo-spec/geronimo-spec-jta/jars/geronimo-spec-jta-1.0.1B-rc4.jar"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-webapp/srcs/jetty-webapp-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-webapp/jars/jetty-webapp-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-webapp/docs/jetty-webapp-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-xml/srcs/jetty-xml-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-xml/jars/jetty-xml-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-xml/docs/jetty-xml-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-util/srcs/jetty-util-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-util/jars/jetty-util-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-util/docs/jetty-util-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-servlet/srcs/jetty-servlet-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-servlet/jars/jetty-servlet-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-servlet/docs/jetty-servlet-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-security/srcs/jetty-security-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-security/jars/jetty-security-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-security/docs/jetty-security-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-server/srcs/jetty-server-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-server/jars/jetty-server-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-server/docs/jetty-server-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.servlet/srcs/javax.servlet-3.0.0.v201112011016-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.servlet/orbits/javax.servlet-3.0.0.v201112011016.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.servlet/docs/javax.servlet-3.0.0.v201112011016-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-http/srcs/jetty-http-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-http/jars/jetty-http-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-http/docs/jetty-http-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-io/srcs/jetty-io-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-io/jars/jetty-io-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-io/docs/jetty-io-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-plus/srcs/jetty-plus-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-plus/jars/jetty-plus-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-plus/docs/jetty-plus-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.transaction/srcs/javax.transaction-1.1.1.v201105210645-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.transaction/orbits/javax.transaction-1.1.1.v201105210645.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.transaction/docs/javax.transaction-1.1.1.v201105210645-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-jndi/srcs/jetty-jndi-9.0.4.v20130625-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-jndi/jars/jetty-jndi-9.0.4.v20130625.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty/jetty-jndi/docs/jetty-jndi-9.0.4.v20130625-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.mail.glassfish/srcs/javax.mail.glassfish-1.4.1.v201005082020-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.mail.glassfish/orbits/javax.mail.glassfish-1.4.1.v201005082020.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.mail.glassfish/docs/javax.mail.glassfish-1.4.1.v201005082020-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.activation/srcs/javax.activation-1.1.0.v201105071233-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.activation/orbits/javax.activation-1.1.0.v201105071233.jar">
-    <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.eclipse.jetty.orbit/javax.activation/docs/javax.activation-1.1.0.v201105071233-javadoc.jar!/"/>
-    </attributes>
-  </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-core/srcs/tomcat-embed-core-7.0.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-core/jars/tomcat-embed-core-7.0.22.jar"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-logging-juli/srcs/tomcat-embed-logging-juli-7.0.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-logging-juli/jars/tomcat-embed-logging-juli-7.0.22.jar"/>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-jasper/srcs/tomcat-embed-jasper-7.0.22-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.apache.tomcat.embed/tomcat-embed-jasper/jars/tomcat-embed-jasper-7.0.22.jar"/>
   <classpathentry sourcepath="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/srcs/sbt-revolver-0.7.1-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/jars/sbt-revolver-0.7.1.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/docs/sbt-revolver-0.7.1-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
-  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.google.guava/guava/srcs/guava-21.0-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.google.guava/guava/bundles/guava-21.0.jar">
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/srcs/xsbt-web-plugin-3.0.1-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/jars/xsbt-web-plugin-3.0.1.jar">
     <attributes>
-      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.google.guava/guava/docs/guava-21.0-javadoc.jar!/"/>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/docs/xsbt-web-plugin-3.0.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-elasticbeanstalk/srcs/aws-java-sdk-elasticbeanstalk-1.11.105-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-elasticbeanstalk/jars/aws-java-sdk-elasticbeanstalk-1.11.105.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-elasticbeanstalk/docs/aws-java-sdk-elasticbeanstalk-1.11.105-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-core/srcs/aws-java-sdk-core-1.11.105-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-core/jars/aws-java-sdk-core-1.11.105.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-core/docs/aws-java-sdk-core-1.11.105-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/commons-logging/commons-logging/srcs/commons-logging-1.1.3-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/commons-logging/commons-logging/jars/commons-logging-1.1.3.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/commons-logging/commons-logging/docs/commons-logging-1.1.3-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.apache.httpcomponents/httpclient/srcs/httpclient-4.5.2-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.apache.httpcomponents/httpclient/jars/httpclient-4.5.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.apache.httpcomponents/httpclient/docs/httpclient-4.5.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/org.apache.httpcomponents/httpcore/srcs/httpcore-4.4.4-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/org.apache.httpcomponents/httpcore/jars/httpcore-4.4.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/org.apache.httpcomponents/httpcore/docs/httpcore-4.4.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/commons-codec/commons-codec/srcs/commons-codec-1.9-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/commons-codec/commons-codec/jars/commons-codec-1.9.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/commons-codec/commons-codec/docs/commons-codec-1.9-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/software.amazon.ion/ion-java/srcs/ion-java-1.0.2-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/software.amazon.ion/ion-java/bundles/ion-java-1.0.2.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/software.amazon.ion/ion-java/docs/ion-java-1.0.2-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/srcs/jackson-databind-2.6.6-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/bundles/jackson-databind-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-databind/docs/jackson-databind-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/srcs/jackson-annotations-2.6.0-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/bundles/jackson-annotations-2.6.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-annotations/docs/jackson-annotations-2.6.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/srcs/jackson-core-2.6.6-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/bundles/jackson-core-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.fasterxml.jackson.core/jackson-core/docs/jackson-core-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/srcs/jackson-dataformat-cbor-2.6.6-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/bundles/jackson-dataformat-cbor-2.6.6.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.fasterxml.jackson.dataformat/jackson-dataformat-cbor/docs/jackson-dataformat-cbor-2.6.6-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/joda-time/joda-time/srcs/joda-time-2.8.1-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/joda-time/joda-time/jars/joda-time-2.8.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/joda-time/joda-time/docs/joda-time-2.8.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.amazonaws/jmespath-java/srcs/jmespath-java-1.11.105-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.amazonaws/jmespath-java/jars/jmespath-java-1.11.105.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.amazonaws/jmespath-java/docs/jmespath-java-1.11.105-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-s3/srcs/aws-java-sdk-s3-1.11.105-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-s3/jars/aws-java-sdk-s3-1.11.105.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-s3/docs/aws-java-sdk-s3-1.11.105-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-kms/srcs/aws-java-sdk-kms-1.11.105-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-kms/jars/aws-java-sdk-kms-1.11.105.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.amazonaws/aws-java-sdk-kms/docs/aws-java-sdk-kms-1.11.105-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>

@@ -7,3 +7,4 @@ project/plugins/target/
 target/
 /bin/
 .cache-main
+.settings/

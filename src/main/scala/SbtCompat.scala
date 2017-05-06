@@ -23,7 +23,7 @@ object SbtCompat {
 // ----
 
 object SbtCompatImpl extends SbtCompat with RevolverKeys {
-  import Plugin.{AppengineKeys => gae}
+  import AppenginePlugin.{ AppengineKeys => gae }
 
   def changeJavaOptions(f: (File, File, String, File, Boolean, Int) => Seq[String]) =
     javaOptions in gae.devServer <<= (gae.overridesJarPath, gae.agentJarPath, gae.reJRebelJar,
