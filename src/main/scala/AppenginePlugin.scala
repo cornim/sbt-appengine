@@ -36,10 +36,10 @@ object Plugin extends sbt.Plugin {
     lazy val onStartHooks = SettingKey[Seq[() => Unit]]("appengine-on-start-hooks")
     lazy val onStopHooks = SettingKey[Seq[() => Unit]]("appengine-on-stop-hooks")
     lazy val apiToolsJar = SettingKey[String]("appengine-api-tools-jar", "Name of the development startup executable jar.")
-    lazy val apiToolsPath = SettingKey[File]("appengine-api-tools-path", "Path of the development startup executable jar.")
+    lazy val apiToolsPath = TaskKey[File]("appengine-api-tools-path", "Path of the development startup executable jar.")
     lazy val sdkVersion = SettingKey[String]("appengine-sdk-version")
     lazy val sdkPath = TaskKey[File]("appengine-sdk-path", "Sets sdk path and retrives sdk if necessary.")
-    lazy val classpath = SettingKey[Classpath]("appengine-classpath")
+    lazy val classpath = TaskKey[Classpath]("appengine-classpath")
     lazy val apiJarName = SettingKey[String]("appengine-api-jar-name")
     lazy val apiLabsJarName = SettingKey[String]("appengine-api-labs-jar-name")
     lazy val jsr107CacheJarName = SettingKey[String]("appengine-jsr107-cache-jar-name")
@@ -47,12 +47,12 @@ object Plugin extends sbt.Plugin {
     lazy val libPath = TaskKey[File]("appengine-lib-path")
     lazy val libUserPath = TaskKey[File]("appengine-lib-user-path")
     lazy val libImplPath = TaskKey[File]("appengine-lib-impl-path")
-    lazy val apiJarPath = SettingKey[File]("appengine-api-jar-path")
+    lazy val apiJarPath = TaskKey[File]("appengine-api-jar-path")
     lazy val appcfgName = SettingKey[String]("appengine-appcfg-name")
-    lazy val appcfgPath = SettingKey[File]("appengine-appcfg-path")
-    lazy val overridePath = SettingKey[File]("appengine-override-path")
-    lazy val overridesJarPath = SettingKey[File]("appengine-overrides-jar-path")
-    lazy val agentJarPath = SettingKey[File]("appengine-agent-jar-path")
+    lazy val appcfgPath = TaskKey[File]("appengine-appcfg-path")
+    lazy val overridePath = TaskKey[File]("appengine-override-path")
+    lazy val overridesJarPath = TaskKey[File]("appengine-overrides-jar-path")
+    lazy val agentJarPath = TaskKey[File]("appengine-agent-jar-path")
     lazy val emptyFile = TaskKey[File]("appengine-empty-file")
     lazy val temporaryWarPath = SettingKey[File]("appengine-temporary-war-path")
     lazy val localDbPath = SettingKey[File]("appengine-local-db-path")
@@ -98,17 +98,6 @@ object Plugin extends sbt.Plugin {
       } else s.log.info(out.toString)
     }
 
-    def buildSdkVersion(libUserPath: File): String = {
-      val pat = """appengine-api-1.0-sdk-(\d\.\d+\.\d+(?:\.\d+)*)\.jar""".r
-      (libUserPath * "appengine-api-1.0-sdk-*.jar").get.toList match {
-        case jar :: _ => jar.name match {
-          case pat(version) => version
-          case _ => sys.error("invalid jar file. " + jar)
-        }
-        case _ => sys.error("not found appengine api jar.")
-      }
-    }
-
     def isWindows = System.getProperty("os.name").startsWith("Windows")
     def osBatchSuffix = if (isWindows) ".cmd" else ".sh"
 
@@ -124,14 +113,19 @@ object Plugin extends sbt.Plugin {
       startDevServer(streams, logTag, project, options, mainClass, cp, args, startConfig, onStart)
     }
     // see https://github.com/spray/sbt-revolver/blob/master/src/main/scala/spray/revolver/Actions.scala#L32
-    def startDevServer(streams: TaskStreams, logTag: String, project: ProjectRef, options: ForkOptions, mainClass: Option[String],
-      cp: Classpath, args: Seq[String], startConfig: ExtraCmdLineOptions, onStart: Seq[() => Unit]): revolver.AppProcess = {
+    def startDevServer(streams: TaskStreams, logTag: String, project: ProjectRef,
+      options: ForkOptions, mainClass: Option[String],
+      cp: Classpath, args: Seq[String], startConfig: ExtraCmdLineOptions,
+      onStart: Seq[() => Unit]): revolver.AppProcess = {
+
       assert(!revolverState.getProcess(project).exists(_.isRunning))
 
       val color = updateStateAndGet(_.takeColor)
       val logger = new revolver.SysoutLogger(logTag, color, streams.log.ansiCodesSupported)
       colorLogger(streams.log).info("[YELLOW]Starting dev server in the background ...")
       onStart foreach { _.apply() }
+      streams.log.info(cp.toString() + "\n" + options + "\n" + startConfig.jvmArgs
+        + "\n" + mainClass.get + "\n" + startConfig.startArgs + "\n" + args)
       val appProcess = revolver.AppProcess(project, color, logger) {
         Fork.java.fork(options.javaHome,
           Seq("-cp", cp.map(_.data.absolutePath).mkString(System.getProperty("file.separator"))) ++
@@ -147,7 +141,7 @@ object Plugin extends sbt.Plugin {
 
   lazy val baseAppengineSettings: Seq[Def.Setting[_]] = Seq(
     // this is classpath during compile
-    unmanagedClasspath ++= gae.classpath.value,
+    //unmanagedClasspath ++= gae.classpath.value,
     // this is classpath included into WEB-INF/lib
     // https://developers.google.com/appengine/docs/java/tools/ant
     // "All of these JARs are in the SDK's lib/user/ directory."
@@ -219,13 +213,13 @@ object Plugin extends sbt.Plugin {
 
     gae.binPath := new File(gae.sdkPath.value, "bin"),
     gae.libPath := new File(gae.sdkPath.value, "lib"),
-    gae.libUserPath := (gae.libPath(_ / "user")).value,
-    gae.libImplPath := (gae.libPath(_ / "impl")).value,
+    gae.libUserPath := new File(gae.libPath.value, "user"),
+    gae.libImplPath := new File(gae.libPath.value, "impl"),
     gae.apiJarPath := { gae.libUserPath.value / gae.apiJarName.value },
     gae.apiToolsPath := { gae.libPath.value / gae.apiToolsJar.value },
     gae.appcfgName := "appcfg" + AppEngine.osBatchSuffix,
     gae.appcfgPath := { gae.binPath.value / gae.appcfgName.value },
-    gae.overridePath := (gae.libPath(_ / "override")).value,
+    gae.overridePath := gae.libPath.value / "override",
     gae.overridesJarPath := { gae.overridePath.value / "appengine-dev-jdk-overrides.jar" },
     gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" },
     gae.emptyFile := file(""),
@@ -274,7 +268,7 @@ object Plugin extends sbt.Plugin {
     WebPlugin.webSettings ++
       inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
       inConfig(Test)(Seq(
-        unmanagedClasspath ++= gae.classpath.value,
+        //unmanagedClasspath ++= gae.classpath.value,
         gae.classpath := {
           val impljars = ((gae.libImplPath in Compile).value * "*.jar").get
           val testingjars = ((gae.libPath in Compile).value / "testing" * "*.jar").get

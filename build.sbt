@@ -27,8 +27,6 @@ libraryDependencies ++={
   }
 )}
 
-libraryDependencies += "com.google.guava" % "guava" % "21.0"
-
 scalacOptions := Seq("-deprecation", "-unchecked", "-feature")
 
 

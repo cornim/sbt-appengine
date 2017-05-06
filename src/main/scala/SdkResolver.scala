@@ -12,9 +12,6 @@ import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.retrieve.RetrieveOptions
 
-import com.google.common.io.ByteStreams
-import com.google.common.io.Files
-
 import sbt.Def
 import sbt.Def.macroValueI
 import sbt.Def.macroValueIT
@@ -24,6 +21,10 @@ import sbt.Keys.baseDirectory
 import sbt.Keys.ivySbt
 import sbt.Keys.libraryDependencies
 import sbt.Keys.streams
+import java.util.zip.ZipInputStream
+import java.io.BufferedOutputStream
+import java.io.FileOutputStream
+import java.io.FileInputStream
 
 object SdkResolver {
 
@@ -81,7 +82,7 @@ object SdkResolver {
         // Step 2: retrieve
         val m = rr.getModuleDescriptor();
 
-        val out = new File(baseDir + "appengine-java-sdk")
+        val out = new File(baseDir, "appengine-java-sdk")
 
         val retrieveExitCode = ivy.retrieve(
           m.getModuleRevisionId(),
@@ -95,7 +96,7 @@ object SdkResolver {
   }
 
   def unzipSdk(sdkRepoDir: File, sdkVersion: String): File = {
-    val sdkBaseDir = new File(sdkRepoDir, sdkVersion);
+    val sdkBaseDir = new File(sdkRepoDir, sdkVersion)
     val sdkArchiveOpt = sdkRepoDir.listFiles(new FilenameFilter() {
       def accept(dir: File, filename: String) = filename.endsWith(".zip")
     }).headOption
@@ -116,9 +117,10 @@ object SdkResolver {
     // While processing the zip archive, if we find an initial entry that is a directory,
     // and all entries are a child
     // of this directory, then we append this to the sdkBaseDir we return.
-    var sdkBaseDirSuffix: String = null;
+    var sdkBaseDirSuffix: String = null
 
     try {
+      val zin = new ZipInputStream(new FileInputStream(sdkArchive))
       val sdkZipArchive = new ZipFile(sdkArchive);
       var zipEntries = sdkZipArchive.entries();
 
@@ -146,17 +148,47 @@ object SdkResolver {
           }
 
           if (!zipEntryDestination.exists()) {
-            Files.createParentDirs(zipEntryDestination);
-            Files.write(ByteStreams.toByteArray(sdkZipArchive.getInputStream(zipEntry)), zipEntryDestination);
+            createParentDirs(zipEntryDestination)
+            extractFile(zin, zipEntryDestination)
           }
         }
       }
 
     } catch {
       case e: IOException => sys.error("Could not open SDK zip archive.\n" + e);
+    } finally {
+      sdkArchive.delete()
     }
 
     if (sdkBaseDirSuffix == null) sdkBaseDir
     else new File(sdkBaseDir, sdkBaseDirSuffix)
+  }
+
+  def createParentDirs(file: File): Unit = {
+    if (file == null) return
+    val parent = file.getCanonicalFile().getParentFile();
+    if (parent == null) {
+      /*
+       * The given directory is a filesystem root. All zero of its ancestors
+       * exist. This doesn't mean that the root itself exists -- consider x:\ on
+       * a Windows machine without such a drive -- or even that the caller can
+       * create it, but this method makes no such guarantees even for non-root
+       * files.
+       */
+      return
+    }
+    parent.mkdirs();
+    if (!parent.isDirectory()) sys.error("Unable to create parent directories of " + file)
+  }
+
+  def extractFile(zipIn: ZipInputStream, outFile: File): Unit = {
+    val bos = new BufferedOutputStream(new FileOutputStream(outFile))
+    val bytesIn = new Array[Byte](4096)
+    var read = 0
+    while (read != -1) {
+      bos.write(bytesIn, 0, read);
+      read = zipIn.read(bytesIn)
+    }
+    bos.close();
   }
 }
