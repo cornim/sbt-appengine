@@ -1,5 +1,6 @@
 <classpath>
   <classpathentry kind="src" path="src/main/scala"/>
+  <classpathentry kind="src" path="target/scala-2.10/sbt-0.13/resource_managed/main"/>
   <classpathentry sourcepath="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/srcs/xsbt-web-plugin-0.4.0-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/jars/xsbt-web-plugin-0.4.0.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/com.earldouglas/xsbt-web-plugin/docs/xsbt-web-plugin-0.4.0-javadoc.jar!/"/>
@@ -90,6 +91,11 @@
   <classpathentry sourcepath="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/srcs/sbt-revolver-0.7.1-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/jars/sbt-revolver-0.7.1.jar">
     <attributes>
       <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/scala_2.10/sbt_0.13/io.spray/sbt-revolver/docs/sbt-revolver-0.7.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/home/corni/.ivy2/cache/com.google.guava/guava/srcs/guava-21.0-sources.jar" kind="lib" path="/home/corni/.ivy2/cache/com.google.guava/guava/bundles/guava-21.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/home/corni/.ivy2/cache/com.google.guava/guava/docs/guava-21.0-javadoc.jar!/"/>
     </attributes>
   </classpathentry>
   <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>

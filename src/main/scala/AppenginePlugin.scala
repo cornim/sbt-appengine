@@ -1,6 +1,8 @@
 package sbtappengine
 
 import sbt._
+import org.apache.ivy.core.resolve.ResolveOptions
+import org.apache.ivy.Ivy
 
 object Plugin extends sbt.Plugin {
   import Keys._
@@ -36,15 +38,15 @@ object Plugin extends sbt.Plugin {
     lazy val apiToolsJar = SettingKey[String]("appengine-api-tools-jar", "Name of the development startup executable jar.")
     lazy val apiToolsPath = SettingKey[File]("appengine-api-tools-path", "Path of the development startup executable jar.")
     lazy val sdkVersion = SettingKey[String]("appengine-sdk-version")
-    lazy val sdkPath = SettingKey[File]("appengine-sdk-path")
+    lazy val sdkPath = TaskKey[File]("appengine-sdk-path", "Sets sdk path and retrives sdk if necessary.")
     lazy val classpath = SettingKey[Classpath]("appengine-classpath")
     lazy val apiJarName = SettingKey[String]("appengine-api-jar-name")
     lazy val apiLabsJarName = SettingKey[String]("appengine-api-labs-jar-name")
     lazy val jsr107CacheJarName = SettingKey[String]("appengine-jsr107-cache-jar-name")
-    lazy val binPath = SettingKey[File]("appengine-bin-path")
-    lazy val libPath = SettingKey[File]("appengine-lib-path")
-    lazy val libUserPath = SettingKey[File]("appengine-lib-user-path")
-    lazy val libImplPath = SettingKey[File]("appengine-lib-impl-path")
+    lazy val binPath = TaskKey[File]("appengine-bin-path")
+    lazy val libPath = TaskKey[File]("appengine-lib-path")
+    lazy val libUserPath = TaskKey[File]("appengine-lib-user-path")
+    lazy val libImplPath = TaskKey[File]("appengine-lib-impl-path")
     lazy val apiJarPath = SettingKey[File]("appengine-api-jar-path")
     lazy val appcfgName = SettingKey[String]("appengine-appcfg-name")
     lazy val appcfgPath = SettingKey[File]("appengine-appcfg-path")
@@ -88,19 +90,12 @@ object Plugin extends sbt.Plugin {
       val appcfg: Seq[String] = Seq(appcfgPath.absolutePath.toString) ++ args ++ params
       s.log.debug(appcfg.mkString(" "))
       val out = new StringBuffer
-      val exit = Process(appcfg)!<
+      val exit = Process(appcfg).!<
 
       if (exit != 0) {
         s.log.error(out.toString)
         sys.error("error executing appcfg")
       } else s.log.info(out.toString)
-      ()
-    }
-
-    def buildAppengineSdkPath: File = {
-      val sdk = System.getenv("APPENGINE_SDK_HOME")
-      if (sdk == null) sys.error("You need to set APPENGINE_SDK_HOME")
-      new File(sdk)
     }
 
     def buildSdkVersion(libUserPath: File): String = {
@@ -208,8 +203,8 @@ object Plugin extends sbt.Plugin {
     gae.stopDevServer := (gae.reStop map { identity }).value,
 
     gae.apiToolsJar := "appengine-tools-api.jar",
-    gae.sdkVersion := ((gae.libUserPath) { (dir) => AppEngine.buildSdkVersion(dir) }).value,
-    gae.sdkPath := AppEngine.buildAppengineSdkPath,
+    gae.sdkVersion := SdkResolver.appengineVersion.value,
+    gae.sdkPath := SdkResolver.buildAppengineSdkPath.value,
 
     gae.includeLibUser := true,
     // this controls appengine classpath, which is used in unmanagedClasspath
@@ -222,8 +217,8 @@ object Plugin extends sbt.Plugin {
     gae.apiLabsJarName := ((gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" }).value,
     gae.jsr107CacheJarName := ((gae.sdkVersion) { (v) => "appengine-jsr107cache-" + v + ".jar" }).value,
 
-    gae.binPath := (gae.sdkPath(_ / "bin")).value,
-    gae.libPath := (gae.sdkPath(_ / "lib")).value,
+    gae.binPath := new File(gae.sdkPath.value, "bin"),
+    gae.libPath := new File(gae.sdkPath.value, "lib"),
     gae.libUserPath := (gae.libPath(_ / "user")).value,
     gae.libImplPath := (gae.libPath(_ / "impl")).value,
     gae.apiJarPath := { gae.libUserPath.value / gae.apiJarName.value },

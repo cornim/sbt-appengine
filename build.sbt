@@ -27,7 +27,9 @@ libraryDependencies ++={
   }
 )}
 
-scalacOptions := Seq("-deprecation", "-unchecked")
+libraryDependencies += "com.google.guava" % "guava" % "21.0"
+
+scalacOptions := Seq("-deprecation", "-unchecked", "-feature")
 
 
 publishArtifact in (Compile, packageBin) := true
