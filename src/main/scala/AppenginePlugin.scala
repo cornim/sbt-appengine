@@ -218,7 +218,13 @@ object Plugin extends sbt.Plugin {
     gae.apiJarPath := { gae.libUserPath.value / gae.apiJarName.value },
     gae.apiToolsPath := { gae.libPath.value / gae.apiToolsJar.value },
     gae.appcfgName := "appcfg" + AppEngine.osBatchSuffix,
-    gae.appcfgPath := { gae.binPath.value / gae.appcfgName.value },
+    gae.appcfgPath := {
+      val path = gae.binPath.value / gae.appcfgName.value
+      //Also need to set run_java as executable
+      (gae.binPath.value / ("run_java" + AppEngine.osBatchSuffix)).setExecutable(true)
+      path.setExecutable(true)
+      path
+    },
     gae.overridePath := gae.libPath.value / "override",
     gae.overridesJarPath := { gae.overridePath.value / "appengine-dev-jdk-overrides.jar" },
     gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" },
