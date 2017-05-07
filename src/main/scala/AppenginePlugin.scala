@@ -30,8 +30,6 @@ object AppenginePlugin extends AutoPlugin {
     lazy val cronInfo = InputKey[Unit]("appengine-cron-info", "Displays times for the next several runs of each cron job.")
     lazy val devServer = InputKey[revolver.AppProcess]("appengine-dev-server", "Run application through development server.")
     lazy val stopDevServer = TaskKey[Unit]("appengine-stop-dev-server", "Stop development server.")
-    lazy val enhance = TaskKey[Unit]("appengine-enhance", "Execute ORM enhancement.")
-    lazy val enhanceCheck = TaskKey[Unit]("appengine-enhance-check", "Just check the classes for enhancement status.")
 
     lazy val onStartHooks = SettingKey[Seq[() => Unit]]("appengine-on-start-hooks")
     lazy val onStopHooks = SettingKey[Seq[() => Unit]]("appengine-on-stop-hooks")
@@ -42,7 +40,6 @@ object AppenginePlugin extends AutoPlugin {
     lazy val classpath = TaskKey[Classpath]("appengine-classpath")
     lazy val apiJarName = SettingKey[String]("appengine-api-jar-name")
     lazy val apiLabsJarName = SettingKey[String]("appengine-api-labs-jar-name")
-    lazy val jsr107CacheJarName = SettingKey[String]("appengine-jsr107-cache-jar-name")
     lazy val binPath = TaskKey[File]("appengine-bin-path")
     lazy val libPath = TaskKey[File]("appengine-lib-path")
     lazy val libUserPath = TaskKey[File]("appengine-lib-user-path")
@@ -213,7 +210,6 @@ object AppenginePlugin extends AutoPlugin {
 
     gae.apiJarName := ((gae.sdkVersion) { (v) => "appengine-api-1.0-sdk-" + v + ".jar" }).value,
     gae.apiLabsJarName := ((gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" }).value,
-    gae.jsr107CacheJarName := ((gae.sdkVersion) { (v) => "appengine-jsr107cache-" + v + ".jar" }).value,
 
     gae.binPath := new File(gae.sdkPath.value, "bin"),
     gae.libPath := new File(gae.sdkPath.value, "lib"),
@@ -231,8 +227,7 @@ object AppenginePlugin extends AutoPlugin {
     },
     gae.overridePath := gae.libPath.value / "override",
     gae.overridesJarPath := { gae.overridePath.value / "appengine-dev-jdk-overrides.jar" },
-    gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" },
-    gae.emptyFile := file(""))
+    gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" })
 
   override lazy val projectSettings = appengineSettings
   lazy val appengineSettings: Seq[Def.Setting[_]] =

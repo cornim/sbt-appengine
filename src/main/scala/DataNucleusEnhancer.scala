@@ -8,6 +8,9 @@ import sbt.Compile
 
 /*
 object DataNucleusEnhancerPlugin extends AutoPlugin {
+
+    lazy val enhance = TaskKey[Unit]("appengine-enhance", "Execute ORM enhancement.")
+    lazy val enhanceCheck = TaskKey[Unit]("appengine-enhance-check", "Just check the classes for enhancement status.")
   
     lazy val baseAppengineDataNucleusSettings: Seq[Def.Setting[_]] = Seq(
     packageWar := ((packageWar) dependsOn gae.enhance).value,
