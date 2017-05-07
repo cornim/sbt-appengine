@@ -1,6 +1,8 @@
 package sbtappengine
 
 import sbt._
+import sbt.Attributed.data
+import complete.DefaultParsers.spaceDelimited
 import com.earldouglas.xwp.WarPlugin
 import com.earldouglas.xwp.WebappPlugin.autoImport.webappPrepare
 
@@ -29,6 +31,7 @@ object AppenginePlugin extends AutoPlugin {
     lazy val deployDos = InputKey[Unit]("appengine-deploy-dos", "Update application DoS protection configuration.")
     lazy val cronInfo = InputKey[Unit]("appengine-cron-info", "Displays times for the next several runs of each cron job.")
     lazy val devServer = InputKey[revolver.AppProcess]("appengine-dev-server", "Run application through development server.")
+    lazy val devServer2 = InputKey[Unit]("gae-dev-server", "Run application through development server.")
     lazy val stopDevServer = TaskKey[Unit]("appengine-stop-dev-server", "Stop development server.")
 
     lazy val onStartHooks = SettingKey[Seq[() => Unit]]("appengine-on-start-hooks")
@@ -106,6 +109,7 @@ object AppenginePlugin extends AutoPlugin {
     def restartDevServer(streams: TaskStreams, logTag: String, project: ProjectRef, options: ForkOptions, mainClass: Option[String],
       cp: Classpath, args: Seq[String], startConfig: ExtraCmdLineOptions, war: File,
       onStart: Seq[() => Unit], onStop: Seq[() => Unit]): revolver.AppProcess = {
+      streams.log.info(options.toString())
       if (revolverState.getProcess(project).exists(_.isRunning)) {
         colorLogger(streams.log).info("[YELLOW]Stopping dev server ...")
         stopAppWithStreams(streams, project)
@@ -188,12 +192,40 @@ object AppenginePlugin extends AutoPlugin {
     gae.debugPort in gae.devServer := 1044,
     gae.onStartHooks in gae.devServer := Nil,
     gae.onStopHooks in gae.devServer := Nil,
-    SbtCompat.impl.changeJavaOptions { (o, a, jr, ldb, d, dp) =>
-      Seq("-ea", "-javaagent:" + a.getAbsolutePath, "-Xbootclasspath/p:" + o.getAbsolutePath,
-        "-Ddatastore.backing_store=" + ldb.getAbsolutePath) ++
-        Seq("-Djava.awt.headless=true") ++
-        (if (d) Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=" + dp.toString) else Nil) ++
-        createJRebelAgentOption(revolver.SysoutLogger, jr).toSeq
+    /*javaOptions in gae.devServer := Seq("-ea",
+      "-javaagent:" + gae.overridesJarPath.value.getAbsolutePath,
+      "-Xbootclasspath/p:" + gae.agentJarPath.value.getAbsolutePath,
+      "-Ddatastore.backing_store=" + (gae.localDbPath in gae.devServer).value.getAbsolutePath) ++
+      Seq("-Djava.awt.headless=true") ++
+      (if ((gae.debug in gae.devServer).value)
+        Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=" +
+        (gae.debugPort in gae.devServer).value.toString)
+      else Nil),*/
+    //javaOptions in gae.devServer2 := Seq("-ea"),
+    gae.devServer2 := {
+      val args = spaceDelimited("<arg>").parsed
+
+      val mainClass = "com.google.appengine.tools.KickStart"
+      val classpath = Seq(gae.apiToolsPath.value)
+
+      val arguments = Seq("-ea",
+        "-cp", gae.apiToolsPath.value.getAbsolutePath(),
+        "com.google.appengine.tools.KickStart",
+        "com.google.appengine.tools.development.DevAppServerMain",
+        (target in webappPrepare).value.getAbsolutePath()) ++ args
+
+      streams.value.log.warn(arguments.toString())
+      val forkOptions = new ForkOptions(javaHome = javaHome.value,
+        outputStrategy = outputStrategy.value,
+        bootJars = Seq(),
+        workingDirectory = Some(baseDirectory.value),
+        runJVMOptions = Seq(),
+        connectInput = false,
+        envVars = Map())
+
+      val proc = Fork.java.fork(forkOptions, arguments)
+
+      //(runner in gae.devServer2).value.run(mainClass, classpath, arguments, streams.value.log)
     },
     gae.stopDevServer := (gae.reStop map { identity }).value,
 

@@ -156,6 +156,7 @@ object SdkResolver {
     } catch {
       case e: IOException => sys.error("Could not open SDK zip archive.\n" + e);
     } finally {
+      //TODO: Append version number to zip file
       //sdkArchive.delete()
     }
 
