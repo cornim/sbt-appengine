@@ -11,11 +11,8 @@ object AppenginePlugin extends AutoPlugin {
 
   import Keys._
   import Def.Initialize
-  import spray.revolver
-  import revolver.Actions._
-  import revolver.Utilities._
 
-  object AppengineKeys extends revolver.RevolverKeys {
+  object AppengineKeys {
     lazy val requestLogs = InputKey[Unit]("appengine-request-logs", "Write request logs in Apache common log format.")
     lazy val rollback = InputKey[Unit]("appengine-rollback", "Rollback an in-progress update.")
     lazy val deploy = InputKey[Unit]("appengine-deploy", "Create or update an app version.")
@@ -30,9 +27,8 @@ object AppenginePlugin extends AutoPlugin {
     lazy val deployQueues = InputKey[Unit]("appengine-deploy-queues", "Update application task queue definitions.")
     lazy val deployDos = InputKey[Unit]("appengine-deploy-dos", "Update application DoS protection configuration.")
     lazy val cronInfo = InputKey[Unit]("appengine-cron-info", "Displays times for the next several runs of each cron job.")
-    lazy val devServer = InputKey[revolver.AppProcess]("appengine-dev-server", "Run application through development server.")
-    lazy val devServer2 = InputKey[Unit]("gae-dev-server", "Run application through development server.")
-    lazy val stopDevServer = TaskKey[Unit]("appengine-stop-dev-server", "Stop development server.")
+    lazy val devServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
+    lazy val stopDevServer = TaskKey[Unit]("gae-stop-dev-server", "Stop development server.")
 
     lazy val onStartHooks = SettingKey[Seq[() => Unit]]("appengine-on-start-hooks")
     lazy val onStopHooks = SettingKey[Seq[() => Unit]]("appengine-on-stop-hooks")
@@ -104,45 +100,9 @@ object AppenginePlugin extends AutoPlugin {
 
     def isWindows = System.getProperty("os.name").startsWith("Windows")
     def osBatchSuffix = if (isWindows) ".cmd" else ".sh"
-
-    // see https://github.com/spray/sbt-revolver/blob/master/src/main/scala/spray/revolver/Actions.scala#L26
-    def restartDevServer(streams: TaskStreams, logTag: String, project: ProjectRef, options: ForkOptions, mainClass: Option[String],
-      cp: Classpath, args: Seq[String], startConfig: ExtraCmdLineOptions, war: File,
-      onStart: Seq[() => Unit], onStop: Seq[() => Unit]): revolver.AppProcess = {
-      streams.log.info(options.toString())
-      if (revolverState.getProcess(project).exists(_.isRunning)) {
-        colorLogger(streams.log).info("[YELLOW]Stopping dev server ...")
-        stopAppWithStreams(streams, project)
-        onStop foreach { _.apply() }
-      }
-      startDevServer(streams, logTag, project, options, mainClass, cp, args, startConfig, onStart)
-    }
-    // see https://github.com/spray/sbt-revolver/blob/master/src/main/scala/spray/revolver/Actions.scala#L32
-    def startDevServer(streams: TaskStreams, logTag: String, project: ProjectRef,
-      options: ForkOptions, mainClass: Option[String],
-      cp: Classpath, args: Seq[String], startConfig: ExtraCmdLineOptions,
-      onStart: Seq[() => Unit]): revolver.AppProcess = {
-
-      assert(!revolverState.getProcess(project).exists(_.isRunning))
-
-      val color = updateStateAndGet(_.takeColor)
-      val logger = new revolver.SysoutLogger(logTag, color, streams.log.ansiCodesSupported)
-      colorLogger(streams.log).info("[YELLOW]Starting dev server in the background ...")
-      onStart foreach { _.apply() }
-      //streams.log.info(cp.toString() + "\n" + options + "\n" + startConfig.jvmArgs
-      //  + "\n" + mainClass.get + "\n" + startConfig.startArgs + "\n" + args)
-      val appProcess = revolver.AppProcess(project, color, logger) {
-        Fork.java.fork(options.javaHome,
-          Seq("-cp", cp.map(_.data.absolutePath).mkString(System.getProperty("file.separator"))) ++
-            options.runJVMOptions ++ startConfig.jvmArgs ++
-            Seq(mainClass.get) ++
-            startConfig.startArgs ++ args,
-          options.workingDirectory, Map(), false, StdoutOutput)
-      }
-      registerAppProcess(project, appProcess)
-      appProcess
-    }
   }
+
+  var devServerProc: Option[Process] = None
 
   lazy val baseAppengineSettings: Seq[Def.Setting[_]] = Seq(
     // this is classpath during compile
@@ -168,53 +128,20 @@ object AppenginePlugin extends AutoPlugin {
     gae.stopBackend := AppEngine.appcfgBackendTask("stop", true).evaluated,
     gae.deleteBackend := AppEngine.appcfgBackendTask("delete", true).evaluated,
 
+    //TODO: Exit code on stop
+    //TODO: Change to command? Or o/wise get rid of var
+    //TODO: Remove dependencies to revolver in build.sbt
+    //TODO: Clean up keys which are not needed anymore.
     gae.devServer := {
-      val args = startArgsParser.parsed
-      val x = (products in Compile).value
-      AppEngine.restartDevServer(streams.value, (gae.reLogTag in gae.devServer).value,
-        thisProjectRef.value, (gae.reForkOptions in gae.devServer).value,
-        (mainClass in gae.devServer).value, (fullClasspath in gae.devServer).value,
-        (gae.reStartArgs in gae.devServer).value, args,
-        (target in webappPrepare).value,
-        (gae.onStartHooks in gae.devServer).value, (gae.onStopHooks in gae.devServer).value)
-    },
-    gae.reForkOptions in gae.devServer :=
-      ForkOptions(javaHome.value, outputStrategy.value, scalaInstance.value.jars,
-        Some((target in webappPrepare).value), (javaOptions in gae.devServer).value, false, Map()),
-    gae.reLogTag in gae.devServer := "gae.devServer",
-    mainClass in gae.devServer := Some("com.google.appengine.tools.development.DevAppServerMain"),
-    fullClasspath in gae.devServer :=
-      ((gae.apiToolsPath) map { (jar: File) => Seq(jar).classpath }).value,
-    gae.localDbPath in gae.devServer := target.value / "local_db.bin",
-    gae.reStartArgs in gae.devServer := Seq((target in webappPrepare).value.absolutePath),
-    // http://thoughts.inphina.com/2010/06/24/remote-debugging-google-app-engine-application-on-eclipse/
-    gae.debug in gae.devServer := true,
-    gae.debugPort in gae.devServer := 1044,
-    gae.onStartHooks in gae.devServer := Nil,
-    gae.onStopHooks in gae.devServer := Nil,
-    /*javaOptions in gae.devServer := Seq("-ea",
-      "-javaagent:" + gae.overridesJarPath.value.getAbsolutePath,
-      "-Xbootclasspath/p:" + gae.agentJarPath.value.getAbsolutePath,
-      "-Ddatastore.backing_store=" + (gae.localDbPath in gae.devServer).value.getAbsolutePath) ++
-      Seq("-Djava.awt.headless=true") ++
-      (if ((gae.debug in gae.devServer).value)
-        Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=" +
-        (gae.debugPort in gae.devServer).value.toString)
-      else Nil),*/
-    //javaOptions in gae.devServer2 := Seq("-ea"),
-    gae.devServer2 := {
       val args = spaceDelimited("<arg>").parsed
 
-      val mainClass = "com.google.appengine.tools.KickStart"
-      val classpath = Seq(gae.apiToolsPath.value)
-
+      //TODO Make this a setting?
       val arguments = Seq("-ea",
         "-cp", gae.apiToolsPath.value.getAbsolutePath(),
         "com.google.appengine.tools.KickStart",
         "com.google.appengine.tools.development.DevAppServerMain",
         (target in webappPrepare).value.getAbsolutePath()) ++ args
 
-      streams.value.log.warn(arguments.toString())
       val forkOptions = new ForkOptions(javaHome = javaHome.value,
         outputStrategy = outputStrategy.value,
         bootJars = Seq(),
@@ -223,11 +150,10 @@ object AppenginePlugin extends AutoPlugin {
         connectInput = false,
         envVars = Map())
 
-      val proc = Fork.java.fork(forkOptions, arguments)
-
-      //(runner in gae.devServer2).value.run(mainClass, classpath, arguments, streams.value.log)
+      devServerProc = Some(Fork.java.fork(forkOptions, arguments))
+      devServerProc.get
     },
-    gae.stopDevServer := (gae.reStop map { identity }).value,
+    gae.stopDevServer := devServerProc.map(x => x.destroy()),
 
     gae.apiToolsJar := "appengine-tools-api.jar",
     gae.sdkVersion := SdkResolver.appengineVersion.value,
@@ -264,7 +190,7 @@ object AppenginePlugin extends AutoPlugin {
   override lazy val projectSettings = appengineSettings
   lazy val appengineSettings: Seq[Def.Setting[_]] =
     WarPlugin.projectSettings ++
-      inConfig(Compile)(revolver.RevolverPlugin.Revolver.settings ++ baseAppengineSettings) ++
+      inConfig(Compile)(baseAppengineSettings) ++
       inConfig(Test)(Seq(
         //unmanagedClasspath ++= gae.classpath.value,
         gae.classpath := {
