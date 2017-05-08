@@ -24,6 +24,7 @@ import sbt.Keys.baseDirectory
 import sbt.Keys.ivySbt
 import sbt.Keys.libraryDependencies
 import sbt.Keys.streams
+import sbt.richFile
 
 object SdkResolver {
 
@@ -81,7 +82,7 @@ object SdkResolver {
         // Step 2: retrieve
         val m = rr.getModuleDescriptor();
 
-        val out = new File(baseDir, "appengine-java-sdk" + version)
+        val out = baseDir / "appengine-java-sdk" / version
 
         val retrieveExitCode = ivy.retrieve(
           m.getModuleRevisionId(),
@@ -95,7 +96,7 @@ object SdkResolver {
   }
 
   def unzipSdk(sdkRepoDir: File, sdkVersion: String): File = {
-    val sdkBaseDir = new File(sdkRepoDir, sdkVersion)
+    val sdkBaseDir = sdkRepoDir
     val sdkArchiveOpt = sdkRepoDir.listFiles(new FilenameFilter() {
       def accept(dir: File, filename: String) = filename.endsWith(".zip")
     }).headOption
