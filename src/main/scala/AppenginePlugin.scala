@@ -30,13 +30,10 @@ object AppenginePlugin extends AutoPlugin {
     lazy val devServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
     lazy val stopDevServer = TaskKey[Unit]("gae-stop-dev-server", "Stop development server.")
 
-    lazy val onStartHooks = SettingKey[Seq[() => Unit]]("appengine-on-start-hooks")
-    lazy val onStopHooks = SettingKey[Seq[() => Unit]]("appengine-on-stop-hooks")
     lazy val apiToolsJar = SettingKey[String]("appengine-api-tools-jar", "Name of the development startup executable jar.")
     lazy val apiToolsPath = TaskKey[File]("appengine-api-tools-path", "Path of the development startup executable jar.")
     lazy val sdkVersion = SettingKey[String]("appengine-sdk-version")
     lazy val sdkPath = TaskKey[File]("appengine-sdk-path", "Sets sdk path and retrives sdk if necessary.")
-    lazy val classpath = TaskKey[Classpath]("appengine-classpath")
     lazy val apiJarName = SettingKey[String]("appengine-api-jar-name")
     lazy val apiLabsJarName = SettingKey[String]("appengine-api-labs-jar-name")
     lazy val binPath = TaskKey[File]("appengine-bin-path")
@@ -105,12 +102,6 @@ object AppenginePlugin extends AutoPlugin {
   var devServerProc: Option[Process] = None
 
   lazy val baseAppengineSettings: Seq[Def.Setting[_]] = Seq(
-    // this is classpath during compile
-    //unmanagedClasspath ++= gae.classpath.value,
-    // this is classpath included into WEB-INF/lib
-    // https://developers.google.com/appengine/docs/java/tools/ant
-    // "All of these JARs are in the SDK's lib/user/ directory."
-    //unmanagedClasspath in DefaultClasspathConf ++= unmanagedClasspath.value,
 
     gae.requestLogs := AppEngine.appcfgTask("request_logs", outputFile = Some("request.log")).evaluated,
     gae.rollback := AppEngine.appcfgTask("rollback").evaluated,
@@ -160,14 +151,8 @@ object AppenginePlugin extends AutoPlugin {
     gae.sdkPath := SdkResolver.buildAppengineSdkPath.value,
 
     gae.includeLibUser := true,
-    // this controls appengine classpath, which is used in unmanagedClasspath
-    gae.classpath := {
-      if (gae.includeLibUser.value) (gae.libUserPath.value ** "*.jar").classpath
-      else Nil
-    },
-
-    gae.apiJarName := ((gae.sdkVersion) { (v) => "appengine-api-1.0-sdk-" + v + ".jar" }).value,
-    gae.apiLabsJarName := ((gae.sdkVersion) { (v) => "appengine-api-labs-" + v + ".jar" }).value,
+    gae.apiJarName := "appengine-api-1.0-sdk-" + gae.sdkVersion.value + ".jar",
+    gae.apiLabsJarName := "appengine-api-labs-" + gae.sdkVersion.value + ".jar",
 
     gae.binPath := new File(gae.sdkPath.value, "bin"),
     gae.libPath := new File(gae.sdkPath.value, "lib"),
@@ -190,12 +175,5 @@ object AppenginePlugin extends AutoPlugin {
   override lazy val projectSettings = appengineSettings
   lazy val appengineSettings: Seq[Def.Setting[_]] =
     WarPlugin.projectSettings ++
-      inConfig(Compile)(baseAppengineSettings) ++
-      inConfig(Test)(Seq(
-        //unmanagedClasspath ++= gae.classpath.value,
-        gae.classpath := {
-          val impljars = ((gae.libImplPath in Compile).value * "*.jar").get
-          val testingjars = ((gae.libPath in Compile).value / "testing" * "*.jar").get
-          (gae.classpath in Compile).value ++ Attributed.blankSeq(impljars ++ testingjars)
-        }))
+      inConfig(Compile)(baseAppengineSettings)
 }
