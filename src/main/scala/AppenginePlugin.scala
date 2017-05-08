@@ -28,30 +28,18 @@ object AppenginePlugin extends AutoPlugin {
     lazy val deployDos = InputKey[Unit]("appengine-deploy-dos", "Update application DoS protection configuration.")
     lazy val cronInfo = InputKey[Unit]("appengine-cron-info", "Displays times for the next several runs of each cron job.")
     lazy val devServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
-    lazy val stopDevServer = TaskKey[Unit]("gae-stop-dev-server", "Stop development server.")
-
-    lazy val apiToolsJar = SettingKey[String]("appengine-api-tools-jar", "Name of the development startup executable jar.")
-    lazy val apiToolsPath = TaskKey[File]("appengine-api-tools-path", "Path of the development startup executable jar.")
+    lazy val stopDevServer = TaskKey[Option[Int]]("gae-stop-dev-server", "Stop development server.")
+    lazy val appcfgPath = TaskKey[File]("appengine-appcfg-path")
+    
+    lazy val apiToolsPath = TaskKey[File]("appengine-api-tools-path", "Path of the development startup executable jar 'appengine-api-tools.jar'.")
     lazy val sdkVersion = SettingKey[String]("appengine-sdk-version")
     lazy val sdkPath = TaskKey[File]("appengine-sdk-path", "Sets sdk path and retrives sdk if necessary.")
-    lazy val apiJarName = SettingKey[String]("appengine-api-jar-name")
-    lazy val apiLabsJarName = SettingKey[String]("appengine-api-labs-jar-name")
-    lazy val binPath = TaskKey[File]("appengine-bin-path")
-    lazy val libPath = TaskKey[File]("appengine-lib-path")
-    lazy val libUserPath = TaskKey[File]("appengine-lib-user-path")
-    lazy val libImplPath = TaskKey[File]("appengine-lib-impl-path")
-    lazy val apiJarPath = TaskKey[File]("appengine-api-jar-path")
-    lazy val appcfgName = SettingKey[String]("appengine-appcfg-name")
-    lazy val appcfgPath = TaskKey[File]("appengine-appcfg-path")
-    lazy val overridePath = TaskKey[File]("appengine-override-path")
-    lazy val overridesJarPath = TaskKey[File]("appengine-overrides-jar-path")
-    lazy val agentJarPath = TaskKey[File]("appengine-agent-jar-path")
-    lazy val emptyFile = TaskKey[File]("appengine-empty-file")
-    lazy val localDbPath = SettingKey[File]("appengine-local-db-path")
-    lazy val debug = SettingKey[Boolean]("appengine-debug")
-    lazy val debugPort = SettingKey[Int]("appengine-debug-port")
-    lazy val includeLibUser = SettingKey[Boolean]("appengine-include-lib-user")
-    lazy val persistenceApi = SettingKey[String]("appengine-persistence-api", "Name of the API we are enhancing for: JDO, JPA.")
+    
+    lazy val forkOptions = SettingKey[ForkOptions]("appengine-fork-options", "Options for forking dev server process")
+    lazy val localDbPath = SettingKey[Option[File]]("appengine-local-db-path", "Path of local db for dev server.")
+    lazy val devServerArgs = SettingKey[Seq[String]]("appengine-dev-server-args", "Additional arguments for starting the development server.")
+    lazy val debug = SettingKey[Boolean]("appengine-debug", "Set debug mode of dev server on/off.")
+    lazy val debugPort = SettingKey[Int]("appengine-debug-port", "Dev server debug port")
   }
   private val gae = AppengineKeys
 
@@ -99,6 +87,11 @@ object AppenginePlugin extends AutoPlugin {
     def osBatchSuffix = if (isWindows) ".cmd" else ".sh"
   }
 
+  def ensureIsExecutable(file: File) = {
+    if (!file.canExecute()) file.setExecutable(true)
+    file
+  }
+
   var devServerProc: Option[Process] = None
 
   lazy val baseAppengineSettings: Seq[Def.Setting[_]] = Seq(
@@ -119,58 +112,47 @@ object AppenginePlugin extends AutoPlugin {
     gae.stopBackend := AppEngine.appcfgBackendTask("stop", true).evaluated,
     gae.deleteBackend := AppEngine.appcfgBackendTask("delete", true).evaluated,
 
-    //TODO: Exit code on stop
-    //TODO: Change to command? Or o/wise get rid of var
-    //TODO: Remove dependencies to revolver in build.sbt
-    //TODO: Clean up keys which are not needed anymore.
-    gae.devServer := {
-      val args = spaceDelimited("<arg>").parsed
-
-      //TODO Make this a setting?
-      val arguments = Seq("-ea",
-        "-cp", gae.apiToolsPath.value.getAbsolutePath(),
-        "com.google.appengine.tools.KickStart",
-        "com.google.appengine.tools.development.DevAppServerMain",
-        (target in webappPrepare).value.getAbsolutePath()) ++ args
-
-      val forkOptions = new ForkOptions(javaHome = javaHome.value,
+    gae.localDbPath := None,
+    gae.devServerArgs := Seq(),
+    gae.forkOptions := new ForkOptions(javaHome = javaHome.value,
         outputStrategy = outputStrategy.value,
         bootJars = Seq(),
         workingDirectory = Some(baseDirectory.value),
         runJVMOptions = Seq(),
         connectInput = false,
-        envVars = Map())
+        envVars = Map()),
+    //TODO: Change to command? Or o/wise get rid of var
+    gae.devServer := {
+      val args = spaceDelimited("<arg>").parsed
 
-      devServerProc = Some(Fork.java.fork(forkOptions, arguments))
+      //TODO Make this a setting?
+      val arguments = Seq("-ea",
+        "-cp", gae.apiToolsPath.value.getAbsolutePath()) ++
+        gae.localDbPath.value.map(_.getAbsolutePath()) ++
+        Seq("com.google.appengine.tools.KickStart",
+          "com.google.appengine.tools.development.DevAppServerMain",
+          (target in webappPrepare).value.getAbsolutePath()) ++
+          gae.devServerArgs.value ++ args
+
+      devServerProc = Some(Fork.java.fork(gae.forkOptions.value, arguments))
       devServerProc.get
     },
-    gae.stopDevServer := devServerProc.map(x => x.destroy()),
+    gae.stopDevServer := {
+      devServerProc.map(_.destroy())
+      val ret = devServerProc.map(_.exitValue())
+      devServerProc = None
+      ret
+    },
 
-    gae.apiToolsJar := "appengine-tools-api.jar",
     gae.sdkVersion := SdkResolver.appengineVersion.value,
     gae.sdkPath := SdkResolver.buildAppengineSdkPath.value,
 
-    gae.includeLibUser := true,
-    gae.apiJarName := "appengine-api-1.0-sdk-" + gae.sdkVersion.value + ".jar",
-    gae.apiLabsJarName := "appengine-api-labs-" + gae.sdkVersion.value + ".jar",
-
-    gae.binPath := new File(gae.sdkPath.value, "bin"),
-    gae.libPath := new File(gae.sdkPath.value, "lib"),
-    gae.libUserPath := new File(gae.libPath.value, "user"),
-    gae.libImplPath := new File(gae.libPath.value, "impl"),
-    gae.apiJarPath := { gae.libUserPath.value / gae.apiJarName.value },
-    gae.apiToolsPath := { gae.libPath.value / gae.apiToolsJar.value },
-    gae.appcfgName := "appcfg" + AppEngine.osBatchSuffix,
+    gae.apiToolsPath := gae.sdkPath.value / "lib" / "appengine-tools-api.jar",
     gae.appcfgPath := {
-      val path = gae.binPath.value / gae.appcfgName.value
-      //Also need to set run_java as executable
-      (gae.binPath.value / ("run_java" + AppEngine.osBatchSuffix)).setExecutable(true)
-      path.setExecutable(true)
-      path
-    },
-    gae.overridePath := gae.libPath.value / "override",
-    gae.overridesJarPath := { gae.overridePath.value / "appengine-dev-jdk-overrides.jar" },
-    gae.agentJarPath := { gae.libPath.value / "agent" / "appengine-agent.jar" })
+      //Setting run_java to executable is needed because appcfg calls run_java
+      ensureIsExecutable(gae.sdkPath.value / "bin" / ("run_java" + AppEngine.osBatchSuffix))
+      ensureIsExecutable(gae.sdkPath.value / "bin" / ("appcfg" + AppEngine.osBatchSuffix))
+    })
 
   override lazy val projectSettings = appengineSettings
   lazy val appengineSettings: Seq[Def.Setting[_]] =
