@@ -81,7 +81,7 @@ object SdkResolver {
         // Step 2: retrieve
         val m = rr.getModuleDescriptor();
 
-        val out = new File(baseDir, "appengine-java-sdk")
+        val out = new File(baseDir, "appengine-java-sdk" + version)
 
         val retrieveExitCode = ivy.retrieve(
           m.getModuleRevisionId(),

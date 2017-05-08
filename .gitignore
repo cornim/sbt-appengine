@@ -8,3 +8,5 @@ target/
 /bin/
 .cache-main
 .settings/
+.project
+.classpath
