@@ -6,6 +6,9 @@ import complete.DefaultParsers.spaceDelimited
 import com.earldouglas.xwp.WarPlugin
 import com.earldouglas.xwp.WebappPlugin.autoImport.webappPrepare
 
+//TODO explicit imports
+//TODO use autoImport
+//TODO override trigger
 object AppenginePlugin extends AutoPlugin {
   override def requires = WarPlugin
 
@@ -30,11 +33,11 @@ object AppenginePlugin extends AutoPlugin {
     lazy val devServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
     lazy val stopDevServer = TaskKey[Option[Int]]("gae-stop-dev-server", "Stop development server.")
     lazy val appcfgPath = TaskKey[File]("appengine-appcfg-path")
-    
+
     lazy val apiToolsPath = TaskKey[File]("appengine-api-tools-path", "Path of the development startup executable jar 'appengine-api-tools.jar'.")
     lazy val sdkVersion = SettingKey[String]("appengine-sdk-version")
     lazy val sdkPath = TaskKey[File]("appengine-sdk-path", "Sets sdk path and retrives sdk if necessary.")
-    
+
     lazy val forkOptions = SettingKey[ForkOptions]("appengine-fork-options", "Options for forking dev server process")
     lazy val localDbPath = SettingKey[Option[File]]("appengine-local-db-path", "Path of local db for dev server.")
     lazy val devServerArgs = SettingKey[Seq[String]]("appengine-dev-server-args", "Additional arguments for starting the development server.")
@@ -115,17 +118,16 @@ object AppenginePlugin extends AutoPlugin {
     gae.localDbPath := None,
     gae.devServerArgs := Seq(),
     gae.forkOptions := new ForkOptions(javaHome = javaHome.value,
-        outputStrategy = outputStrategy.value,
-        bootJars = Seq(),
-        workingDirectory = Some(baseDirectory.value),
-        runJVMOptions = Seq(),
-        connectInput = false,
-        envVars = Map()),
+      outputStrategy = outputStrategy.value,
+      bootJars = Seq(),
+      workingDirectory = Some(baseDirectory.value),
+      runJVMOptions = Seq(),
+      connectInput = false,
+      envVars = Map()),
     //TODO: Change to command? Or o/wise get rid of var
     gae.devServer := {
       val args = spaceDelimited("<arg>").parsed
 
-      //TODO Make this a setting?
       val arguments = Seq("-ea",
         "-cp", gae.apiToolsPath.value.getAbsolutePath()) ++
         gae.localDbPath.value.map(_.getAbsolutePath()) ++
