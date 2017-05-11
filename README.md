@@ -18,7 +18,7 @@ setup
 put the following in the `project/appengine.sbt` or `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.cornim" % "sbt-appengine" % "0.7.1")
+addSbtPlugin("com.cornim" % "sbt-appengine" % "0.7.2")
 ```
 
 put the following in the `build.sbt`:

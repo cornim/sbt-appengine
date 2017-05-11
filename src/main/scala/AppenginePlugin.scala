@@ -144,6 +144,8 @@ object AppenginePlugin extends AutoPlugin {
     devServer := {
       val args = spaceDelimited("<arg>").parsed
 
+      webappPrepare.value
+
       val arguments = Seq("-ea",
         "-cp", apiToolsPath.value.getAbsolutePath()) ++
         localDbPath.value.map(_.getAbsolutePath()) ++
