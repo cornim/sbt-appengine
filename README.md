@@ -15,18 +15,25 @@ use sbt 0.13+
 setup
 -----
 
-put the following in the `project/appengine.sbt` or `project/plugins.sbt`:
+Download or clone this repository and then execute
+```
+sbt -batch publishLocal
+```
+in its root directory.
+
+Then put the following in `project/appengine.sbt` or `project/plugins.sbt` in your project:
 
 ```scala
 addSbtPlugin("com.cornim" % "sbt-appengine" % "0.7.2")
 ```
 
-put the following in the `build.sbt`:
+put the following in your `build.sbt`:
 
 ```scala
 enablePlugins(AppenginePlugin)
 ```
-note that I cannot make this plugin auto-trigger since it depends on 
+
+Note that I cannot make this plugin auto-trigger since it depends on 
 the WarPlugin of xsbt-web-plugin which is not auto-triggering.
 
 
