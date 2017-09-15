@@ -36,33 +36,34 @@ object AppenginePlugin extends AutoPlugin {
   override def trigger = allRequirements
 
   object autoImport {
-    lazy val requestLogs = InputKey[Unit]("gae-request-logs", "Write request logs in Apache common log format.")
-    lazy val rollback = InputKey[Unit]("gae-rollback", "Rollback an in-progress update.")
-    lazy val deploy = InputKey[Unit]("gae-deploy", "Create or update an app version.")
-    lazy val deployBackends = InputKey[Unit]("gae-deploy-backends", "Update the specified backend or all backends.")
-    lazy val rollbackBackend = InputKey[Unit]("gae-rollback-backends", "Roll back a previously in-progress update.")
-    lazy val configBackends = InputKey[Unit]("gae-config-backends", "Configure the specified backend.")
-    lazy val startBackend = InputKey[Unit]("gae-start-backend", "Start the specified backend.")
-    lazy val stopBackend = InputKey[Unit]("gae-stop-backend", "Stop the specified backend.")
-    lazy val deleteBackend = InputKey[Unit]("gae-delete-backend", "Delete the specified backend.")
-    lazy val deployIndexes = InputKey[Unit]("gae-deploy-indexes", "Update application indexes.")
-    lazy val deployCron = InputKey[Unit]("gae-deploy-cron", "Update application cron jobs.")
-    lazy val deployQueues = InputKey[Unit]("gae-deploy-queues", "Update application task queue definitions.")
-    lazy val deployDos = InputKey[Unit]("gae-deploy-dos", "Update application DoS protection configuration.")
-    lazy val cronInfo = InputKey[Unit]("gae-cron-info", "Displays times for the next several runs of each cron job.")
-    lazy val devServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
-    lazy val stopDevServer = TaskKey[Option[Int]]("gae-stop-dev-server", "Stop development server.")
-    lazy val appcfgPath = TaskKey[File]("gae-appcfg-path")
+    lazy val gaeRequestLogs = InputKey[Unit]("gae-request-logs", "Write request logs in Apache common log format.")
+    lazy val gaeRollback = InputKey[Unit]("gae-rollback", "Rollback an in-progress update.")
+    lazy val gaeDeploy = InputKey[Unit]("gae-deploy", "Create or update an app version.")
+    lazy val gaeDeployBackends = InputKey[Unit]("gae-deploy-backends", "Update the specified backend or all backends.")
+    lazy val gaeRollbackBackend = InputKey[Unit]("gae-rollback-backend", "Roll back a previously in-progress update.")
+    lazy val gaeConfigBackends = InputKey[Unit]("gae-config-backends", "Configure the specified backend.")
+    lazy val gaeStartBackend = InputKey[Unit]("gae-start-backend", "Start the specified backend.")
+    lazy val gaeStopBackend = InputKey[Unit]("gae-stop-backend", "Stop the specified backend.")
+    lazy val gaeDeleteBackend = InputKey[Unit]("gae-delete-backend", "Delete the specified backend.")
+    lazy val gaeDeployIndexes = InputKey[Unit]("gae-deploy-indexes", "Update application indexes.")
+    lazy val gaeDeployCron = InputKey[Unit]("gae-deploy-cron", "Update application cron jobs.")
+    lazy val gaeDeployQueues = InputKey[Unit]("gae-deploy-queues", "Update application task queue definitions.")
+    lazy val gaeDeployDos = InputKey[Unit]("gae-deploy-dos", "Update application DoS protection configuration.")
+    lazy val gaeCronInfo = InputKey[Unit]("gae-cron-info", "Displays times for the next several runs of each cron job.")
+    lazy val gaeDevServer = InputKey[Process]("gae-dev-server", "Run application through development server.")
+    lazy val gaeDevServerStop = TaskKey[Option[Int]]("gae-dev-server-stop", "Stop development server.")
+    lazy val gaeAppcfgPath = TaskKey[File]("gae-appcfg-path", "Appcfg path")
 
-    lazy val apiToolsPath = TaskKey[File]("gae-api-tools-path", "Path of the development startup executable jar 'appengine-api-tools.jar'.")
-    lazy val sdkVersion = SettingKey[String]("gae-sdk-version")
-    lazy val sdkPath = TaskKey[File]("gae-sdk-path", "Sets sdk path and retrives sdk if necessary.")
+    lazy val gaeApiToolsPath = TaskKey[File]("gae-api-tools-path", "Path of the development startup executable jar 'appengine-api-tools.jar'.")
+    lazy val gaeSdkVersion = SettingKey[String]("gae-sdk-version", "Version of the google appengine sdk.")
+    lazy val gaeSdkPath = TaskKey[File]("gae-sdk-path", "Sets sdk path and retrives sdk if necessary.")
 
-    lazy val forkOptions = SettingKey[ForkOptions]("gae-fork-options", "Options for forking dev server process")
-    lazy val localDbPath = SettingKey[Option[File]]("gae-local-db-path", "Path of local db for dev server.")
-    lazy val devServerArgs = SettingKey[Seq[String]]("gae-dev-server-args", "Additional arguments for starting the development server.")
-    lazy val debug = SettingKey[Boolean]("gae-debug", "Set debug mode of dev server on/off.")
-    lazy val debugPort = SettingKey[Int]("gae-debug-port", "Dev server debug port")
+    lazy val gaeForkOptions = SettingKey[ForkOptions]("gae-fork-options", "Options for forking dev server process")
+    lazy val gaeLocalDbPath = SettingKey[Option[File]]("gae-local-db-path", "Path of local db for dev server.")
+    lazy val gaeDevServerArgs = SettingKey[Seq[String]]("gae-dev-server-args", "Additional arguments for starting the development server.")
+    //TODO debug and debugPort are not used. Commented till fixed.
+    //lazy val gaeDebug = SettingKey[Boolean]("gae-debug", "Set debug mode of dev server on/off.")
+    //lazy val gaeDebugPort = SettingKey[Int]("gae-debug-port", "Dev server debug port")
   }
   import autoImport._
 
@@ -71,7 +72,7 @@ object AppenginePlugin extends AutoPlugin {
     Def.inputTask {
       val cmdOptions: Seq[String] = spaceDelimited("<arg>").parsed
       webappPrepare.value
-      appcfgTaskCmd(appcfgPath.value, cmdOptions,
+      appcfgTaskCmd(gaeAppcfgPath.value, cmdOptions,
         Seq(action, (target in webappPrepare).value.getAbsolutePath)
           ++ outputFile.toSeq, streams.value)
     }
@@ -85,7 +86,7 @@ object AppenginePlugin extends AutoPlugin {
         sys.error("error executing appcfg: required parameter missing")
       }
       webappPrepare.value
-      appcfgTaskCmd(appcfgPath.value, opts,
+      appcfgTaskCmd(gaeAppcfgPath.value, opts,
         Seq("backends", (target in webappPrepare).value.getAbsolutePath, action)
           ++ args, streams.value)
     }
@@ -112,28 +113,28 @@ object AppenginePlugin extends AutoPlugin {
   }
 
   lazy val appengineAppCfgSettings: Seq[Def.Setting[_]] = Seq(
-    requestLogs := appcfgTask("request_logs", outputFile = Some("request.log")).evaluated,
-    rollback := appcfgTask("rollback").evaluated,
-    deploy := appcfgTask("update").evaluated,
-    deployIndexes := appcfgTask("update_indexes").evaluated,
-    deployCron := appcfgTask("update_cron").evaluated,
-    deployQueues := appcfgTask("update_queues").evaluated,
-    deployDos := appcfgTask("update_dos").evaluated,
-    cronInfo := appcfgTask("cron_info").evaluated,
+    gaeRequestLogs := appcfgTask("request_logs", outputFile = Some("request.log")).evaluated,
+    gaeRollback := appcfgTask("rollback").evaluated,
+    gaeDeploy := appcfgTask("update").evaluated,
+    gaeDeployIndexes := appcfgTask("update_indexes").evaluated,
+    gaeDeployCron := appcfgTask("update_cron").evaluated,
+    gaeDeployQueues := appcfgTask("update_queues").evaluated,
+    gaeDeployDos := appcfgTask("update_dos").evaluated,
+    gaeCronInfo := appcfgTask("cron_info").evaluated,
 
-    deployBackends := appcfgBackendTask("update").evaluated,
-    configBackends := appcfgBackendTask("configure").evaluated,
-    rollbackBackend := appcfgBackendTask("rollback", true).evaluated,
-    startBackend := appcfgBackendTask("start", true).evaluated,
-    stopBackend := appcfgBackendTask("stop", true).evaluated,
-    deleteBackend := appcfgBackendTask("delete", true).evaluated)
+    gaeDeployBackends := appcfgBackendTask("update").evaluated,
+    gaeConfigBackends := appcfgBackendTask("configure").evaluated,
+    gaeRollbackBackend := appcfgBackendTask("rollback", true).evaluated,
+    gaeStartBackend := appcfgBackendTask("start", true).evaluated,
+    gaeStopBackend := appcfgBackendTask("stop", true).evaluated,
+    gaeDeleteBackend := appcfgBackendTask("delete", true).evaluated)
 
   var devServerProc: Option[Process] = None
 
   lazy val appengineDevServerSettings = Seq(
-    localDbPath := None,
-    devServerArgs := Seq(),
-    forkOptions := new ForkOptions(javaHome = javaHome.value,
+    gaeLocalDbPath := None,
+    gaeDevServerArgs := Seq(),
+    gaeForkOptions := new ForkOptions(javaHome = javaHome.value,
       outputStrategy = outputStrategy.value,
       bootJars = Seq(),
       workingDirectory = Some(baseDirectory.value),
@@ -141,23 +142,26 @@ object AppenginePlugin extends AutoPlugin {
       connectInput = false,
       envVars = Map()),
 
-    devServer := {
+    gaeDevServer := {
       val args = spaceDelimited("<arg>").parsed
+      
+      val dbOption = if (gaeLocalDbPath.value.isDefined){
+           Seq("--jvm_flag=-Ddatastore.backing_store=" + gaeLocalDbPath.value.get.getAbsolutePath())
+      } else Seq[String]()
 
       webappPrepare.value
 
       val arguments = Seq("-ea",
-        "-cp", apiToolsPath.value.getAbsolutePath()) ++
-        localDbPath.value.map(_.getAbsolutePath()) ++
+        "-cp", gaeApiToolsPath.value.getAbsolutePath()) ++
         Seq("com.google.appengine.tools.KickStart",
-          "com.google.appengine.tools.development.DevAppServerMain",
-          (target in webappPrepare).value.getAbsolutePath()) ++
-          devServerArgs.value ++ args
+          "com.google.appengine.tools.development.DevAppServerMain") ++
+          gaeDevServerArgs.value ++ dbOption ++ args ++
+          Seq((target in webappPrepare).value.getAbsolutePath())
 
-      devServerProc = Some(Fork.java.fork(forkOptions.value, arguments))
+      devServerProc = Some(Fork.java.fork(gaeForkOptions.value, arguments))
       devServerProc.get
     },
-    stopDevServer := {
+    gaeDevServerStop := {
       devServerProc.map(_.destroy())
       val ret = devServerProc.map(_.exitValue())
       devServerProc = None
@@ -165,14 +169,14 @@ object AppenginePlugin extends AutoPlugin {
       ret
     },
 
-    sdkVersion := SdkResolver.appengineVersion.value,
-    sdkPath := SdkResolver.buildAppengineSdkPath.value,
+    gaeSdkVersion := SdkResolver.appengineVersion.value,
+    gaeSdkPath := SdkResolver.buildAppengineSdkPath.value,
 
-    apiToolsPath := sdkPath.value / "lib" / "appengine-tools-api.jar",
-    appcfgPath := {
+    gaeApiToolsPath := gaeSdkPath.value / "lib" / "appengine-tools-api.jar",
+    gaeAppcfgPath := {
       //Setting run_java to executable is needed because appcfg calls run_java
-      ensureIsExecutable(sdkPath.value / "bin" / ("run_java" + osBatchSuffix))
-      ensureIsExecutable(sdkPath.value / "bin" / ("appcfg" + osBatchSuffix))
+      ensureIsExecutable(gaeSdkPath.value / "bin" / ("run_java" + osBatchSuffix))
+      ensureIsExecutable(gaeSdkPath.value / "bin" / ("appcfg" + osBatchSuffix))
     })
 
   override def projectSettings =

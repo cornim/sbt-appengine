@@ -4,7 +4,7 @@ name := "sbt-appengine"
 
 organization := "com.cornim"
 
-version := "0.7.2"
+version := "0.7.8"
 
 description := "sbt plugin to deploy on appengine"
 
