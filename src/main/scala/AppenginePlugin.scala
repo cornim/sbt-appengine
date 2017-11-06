@@ -61,9 +61,9 @@ object AppenginePlugin extends AutoPlugin {
     lazy val gaeForkOptions = SettingKey[ForkOptions]("gae-fork-options", "Options for forking dev server process")
     lazy val gaeLocalDbPath = SettingKey[Option[File]]("gae-local-db-path", "Path of local db for dev server.")
     lazy val gaeDevServerArgs = SettingKey[Seq[String]]("gae-dev-server-args", "Additional arguments for starting the development server.")
-    //TODO debug and debugPort are not used. Commented till fixed.
-    //lazy val gaeDebug = SettingKey[Boolean]("gae-debug", "Set debug mode of dev server on/off.")
-    //lazy val gaeDebugPort = SettingKey[Int]("gae-debug-port", "Dev server debug port")
+    
+    lazy val gaeDebug = SettingKey[Boolean]("gae-debug", "Set debug mode of dev server on/off.")
+    lazy val gaeDebugPort = SettingKey[Int]("gae-debug-port", "Dev server debug port")
   }
   import autoImport._
 
@@ -134,6 +134,8 @@ object AppenginePlugin extends AutoPlugin {
   lazy val appengineDevServerSettings = Seq(
     gaeLocalDbPath := None,
     gaeDevServerArgs := Seq(),
+    gaeDebug := true,
+    gaeDebugPort := 8888,
     gaeForkOptions := new ForkOptions(javaHome = javaHome.value,
       outputStrategy = outputStrategy.value,
       bootJars = Seq(),
@@ -148,6 +150,11 @@ object AppenginePlugin extends AutoPlugin {
       val dbOption = if (gaeLocalDbPath.value.isDefined){
            Seq("--jvm_flag=-Ddatastore.backing_store=" + gaeLocalDbPath.value.get.getAbsolutePath())
       } else Seq[String]()
+      
+      val debugOption = if (gaeDebug.value) {
+        Seq("--jvm_flag=-Xdebug", "--jvm_flag=-Xrunjdwp:transport=dt_socket,address=" +
+            gaeDebugPort.value + ",server=y,suspend=y")
+      } else Seq[String]()
 
       webappPrepare.value
 
@@ -155,7 +162,7 @@ object AppenginePlugin extends AutoPlugin {
         "-cp", gaeApiToolsPath.value.getAbsolutePath()) ++
         Seq("com.google.appengine.tools.KickStart",
           "com.google.appengine.tools.development.DevAppServerMain") ++
-          gaeDevServerArgs.value ++ dbOption ++ args ++
+          gaeDevServerArgs.value ++ dbOption ++ debugOption ++ args ++
           Seq((target in webappPrepare).value.getAbsolutePath())
 
       devServerProc = Some(Fork.java.fork(gaeForkOptions.value, arguments))
