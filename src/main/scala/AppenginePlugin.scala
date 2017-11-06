@@ -134,7 +134,7 @@ object AppenginePlugin extends AutoPlugin {
   lazy val appengineDevServerSettings = Seq(
     gaeLocalDbPath := None,
     gaeDevServerArgs := Seq(),
-    gaeDebug := true,
+    gaeDebug := false,
     gaeDebugPort := 8888,
     gaeForkOptions := new ForkOptions(javaHome = javaHome.value,
       outputStrategy = outputStrategy.value,
